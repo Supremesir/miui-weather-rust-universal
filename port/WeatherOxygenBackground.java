@@ -61,16 +61,12 @@ final class WeatherOxygenBackground {
                 combined=compose(source,colors,offsets,image.getString("mode"),image.getInt("alpha"));
                 Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
                 paint.setColor(Color.WHITE);
-                // Original CardBackgroundImageView scales to fill, anchored at
-                // the top right. Keep the sky proportional on responsive hosts.
-                if(style==8){
-                    // Standard TodayWeatherWidget uses ImageView.fitXY.
-                    canvas.drawBitmap(combined,null,new RectF(0,0,width,height),paint);
-                }else{
-                    float scale=Math.max(width/combined.getWidth(),height/combined.getHeight());
-                    float drawnWidth=combined.getWidth()*scale,drawnHeight=combined.getHeight()*scale;
-                    canvas.drawBitmap(combined,null,new RectF(width-drawnWidth,0,width,drawnHeight),paint);
-                }
+                // Original CardBackgroundImageView fills and anchors at the top
+                // right. Center-crop every template, including Today, so a new
+                // portrait/landscape host ratio cannot squeeze the sky artwork.
+                float scale=Math.max(width/combined.getWidth(),height/combined.getHeight());
+                float drawnWidth=combined.getWidth()*scale,drawnHeight=combined.getHeight()*scale;
+                canvas.drawBitmap(combined,null,new RectF(width-drawnWidth,0,width,drawnHeight),paint);
             }finally{source.recycle();if(combined!=null)combined.recycle();}
         }catch(Exception error){throw new IllegalStateException("Cannot render original Oxygen sky",error);}
     }

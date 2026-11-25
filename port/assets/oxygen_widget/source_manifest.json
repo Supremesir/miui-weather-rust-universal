@@ -342,26 +342,26 @@
     {
       "source": "res/drawable/weather_quick_card_degree_dark.xml",
       "destination": "res/drawable/weather_oxygen_oos_degree_dark.xml",
-      "bytes": 1127,
-      "sha256": "c7c1bce99dfb0fc05711b5ab8e3c0281c005a7eaaf3bacdca7c46c2e5bd6e0b6"
+      "bytes": 1123,
+      "sha256": "c3dfc6f564a691e760b3766a51b74bbb4882bcdf0551d1d60838e728824116e7"
     },
     {
       "source": "res/drawable/weather_quick_card_degree_light.xml",
       "destination": "res/drawable/weather_oxygen_oos_degree_light.xml",
-      "bytes": 1127,
-      "sha256": "d279859efdf57fe74443db40aa96064dbb82dfd6ad0d125f91ceadb0f6a35f8b"
+      "bytes": 1123,
+      "sha256": "9f12eb3437a5da462842d168a98462600c4efc9b07da3a94fdaae826090c4ff8"
     },
     {
       "source": "res/drawable/weather_quick_card_icon_arrow_dark_up.xml",
       "destination": "res/drawable/weather_oxygen_oos_icon_arrow_dark_up.xml",
-      "bytes": 618,
-      "sha256": "08e30fdbcaa105791ab783349eabe2b136bf58021ba5a91060a1a1bc3c31b2b4"
+      "bytes": 614,
+      "sha256": "906cdde100ec6aba375fc26bedc47c93c421443b37faf45cc645ae369ea061c4"
     },
     {
       "source": "res/drawable/weather_quick_card_icon_arrow_light_up.xml",
       "destination": "res/drawable/weather_oxygen_oos_icon_arrow_light_up.xml",
-      "bytes": 618,
-      "sha256": "93369fa184a40d85cf89ff78db222a5b98430457f5146f40536867ab7f312b13"
+      "bytes": 614,
+      "sha256": "9f2bf9cb10343deca600ad4f8e5fb4f5cbf5890664384eaa0ac5a0081f770fee"
     },
     {
       "source": "res/drawable-xxxhdpi/weather_quick_card_cloudy_morning_nightfall_big_16_bg.webp",

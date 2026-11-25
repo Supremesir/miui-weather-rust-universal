@@ -50,7 +50,8 @@ public class WeatherWidgetProvider extends AppWidgetProvider {
         WeatherRefresh.ensureScheduled(context); WeatherRefresh.requestAutomatic(context);
     }
     @Override public void onAppWidgetOptionsChanged(Context context, AppWidgetManager manager, int id, Bundle options) {
-        update(context, manager, new int[] {id},style());
+        context=context.getApplicationContext();
+        update(context,manager,new int[] {id},style(),readSnapshot(context),options);
         WeatherRefresh.ensureScheduled(context); WeatherRefresh.requestAutomatic(context);
     }
     @Override public void onReceive(Context context, Intent intent) {
@@ -73,13 +74,13 @@ public class WeatherWidgetProvider extends AppWidgetProvider {
             int[] widgets=ids(context,PROVIDERS[style]);
             if(widgets.length==0)continue;
             if(snapshot==null)snapshot=readSnapshot(context);
-            update(context,manager,widgets,style,snapshot);
+            update(context,manager,widgets,style,snapshot,null);
         }
     }
     private static void update(Context context, AppWidgetManager manager, int[] ids,int style) {
         if (ids.length == 0) return;
         context=context.getApplicationContext();
-        update(context,manager,ids,style,readSnapshot(context));
+        update(context,manager,ids,style,readSnapshot(context),null);
     }
     private static WeatherWidgetExtendedData.Snapshot readSnapshot(Context context) {
         WeatherWidgetData data = null;
@@ -93,7 +94,7 @@ public class WeatherWidgetProvider extends AppWidgetProvider {
         return WeatherWidgetExtendedData.snapshot(context,data);
     }
     private static void update(Context context, AppWidgetManager manager, int[] ids,int style,
-            WeatherWidgetExtendedData.Snapshot snapshot) {
+            WeatherWidgetExtendedData.Snapshot snapshot,Bundle suppliedOptions) {
         int layout = resource(context, "layout", "weather_widget");
         int image = resource(context, "id", "weather_widget_image");
         WeatherWidgetRenderer renderer = null;
@@ -112,7 +113,7 @@ public class WeatherWidgetProvider extends AppWidgetProvider {
                 details.put("panel",WeatherWidgetPreferences.panel(context,id));
                 details.put("secondCityId",WeatherWidgetPreferences.secondCityId(context,id));
             } catch(Exception error){Log.w("WeatherWidget","Cannot read extended weather cache",error);}
-            Bundle options = manager.getAppWidgetOptions(id);
+            Bundle options = suppliedOptions!=null?suppliedOptions:manager.getAppWidgetOptions(id);
             List<WeatherWidgetSizing.Size> sizes=WeatherWidgetSizing.resolve(context,options,style);
             int widthPercent=WeatherWidgetPreferences.widthPercent(context,id);
             int heightPercent=WeatherWidgetPreferences.heightPercent(context,id);

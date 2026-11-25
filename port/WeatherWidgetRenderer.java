@@ -77,9 +77,9 @@ final class WeatherWidgetRenderer {
         if (data == null) {
             canvas.save();
             canvas.rotate(60, w / 2, h / 2);
-            asset(canvas, "images/img_0.png", -w * .66f, -h * .66f, w * 2.32f, h * 2.32f);
+            assetCrop(canvas, "images/img_0.png", -w * .66f, -h * .66f, w * 2.32f, h * 2.32f);
             canvas.restore();
-            asset(canvas, "cloud/cloud1.png", 0, 0, 180, h);
+            assetCrop(canvas, "cloud/cloud1.png", 0, 0, 180, h);
             temperature(canvas, "-", 15, 54.5f * sy, 39, 26, -4, 230);
             return bitmap;
         }
@@ -87,11 +87,11 @@ final class WeatherWidgetRenderer {
         // The original MAML places these static sunlight overlays above its gradient.
         // Other phases have no bundled light PNG; do not fabricate one for them.
         if ((type == 0 || type == 1) && duration >= 6 && duration <= 10)
-            asset(canvas, "light/" + (type == 1 ? "cloudy/" : "") + duration + ".png", 0, 0, w, h);
+            assetCrop(canvas, "light/" + (type == 1 ? "cloudy/" : "") + duration + ".png", 0, 0, w, h);
         int cloud = type == 0 ? (duration >= 6 && duration <= 11 ? 1 : 2)
             : type >= 1 && type <= 3 ? 3
             : type >= 13 && type <= 17 || type == 22 || type == 25 ? 6 : 4;
-        asset(canvas, "cloud/cloud" + cloud + ".png", 0, 0, 180, h);
+        assetCrop(canvas, "cloud/cloud" + cloud + ".png", 0, 0, 180, h);
         drawPrecipitation(canvas, data, 0, w, h);
         boolean rain = data.hasRain(now);
         text.setTypeface(medium); text.setTextSize(14);
@@ -124,11 +124,11 @@ final class WeatherWidgetRenderer {
         background(canvas, data, phase, width, height);
         int type = data == null ? -1 : data.weatherType;
         if ((type == 0 || type == 1) && phase >= 6 && phase <= 10)
-            asset(canvas, "light/" + (type == 1 ? "cloudy/" : "") + phase + ".png", 0, 0, width, height);
+            assetCrop(canvas, "light/" + (type == 1 ? "cloudy/" : "") + phase + ".png", 0, 0, width, height);
         int cloud = type == 0 ? (phase >= 6 && phase <= 11 ? 1 : 2)
             : type >= 1 && type <= 3 ? 3
             : type >= 13 && type <= 17 || type == 22 || type == 25 ? 6 : 4;
-        asset(canvas, "cloud/cloud" + cloud + ".png", 0, 0, width * 1.2f, height);
+        assetCrop(canvas, "cloud/cloud" + cloud + ".png", 0, 0, width * 1.2f, height);
     }
 
     /** A stable frame of the original MAML lowerElement, below all card text.
@@ -233,6 +233,26 @@ final class WeatherWidgetRenderer {
             }
         } catch (Exception error) { Log.w("WeatherWidget", "Missing original asset " + path); }
     }
+    /** Center-crop large sky art instead of distorting it to a new host ratio. */
+    private void assetCrop(Canvas canvas, String path, float x, float y, float w, float h) {
+        if (w <= 0 || h <= 0) return;
+        try (InputStream in = context.getAssets().open("weather_widget/" + path)) {
+            Bitmap bitmap = BitmapFactory.decodeStream(in);
+            if (bitmap != null) {
+                float scale = Math.max(w / bitmap.getWidth(), h / bitmap.getHeight());
+                float drawnWidth = bitmap.getWidth() * scale, drawnHeight = bitmap.getHeight() * scale;
+                int saved = canvas.save();
+                canvas.clipRect(x, y, x + w, y + h);
+                paint.setAlpha(255);
+                canvas.drawBitmap(bitmap, null, new RectF(x + (w - drawnWidth) / 2f,
+                    y + (h - drawnHeight) / 2f, x + (w + drawnWidth) / 2f,
+                    y + (h + drawnHeight) / 2f), paint);
+                canvas.restoreToCount(saved);
+                bitmap.recycle();
+            }
+        } catch (Exception error) { Log.w("WeatherWidget", "Missing original asset " + path); }
+    }
+
     private void temperature(Canvas canvas, String value, float x, float y, float size,
                              float degreeSize, float offset, int alpha) {
         setup(size, regular, alpha);

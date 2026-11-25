@@ -54,20 +54,29 @@ final class WeatherCardWidgetRenderer {
         Bitmap result=Bitmap.createBitmap(Math.max(1,width),Math.max(1,height),Bitmap.Config.ARGB_8888);
         Canvas canvas=new Canvas(result);
         WeatherWidgetGeometry.apply(canvas,result.getWidth(),result.getHeight(),widthPercent,heightPercent);
-        // A standard launcher's one-row cell is taller than the original MAML
-        // strip. Keep the template's aspect ratio inside it instead of turning
-        // the whole allocated cell into an oversized card.
-        if(style==DUAL||style==SMALL) {
-            float scale=Math.min(width/w,height/h);
-            canvas.translate((width-w*scale)/2f,(height-h*scale)/2f);
-            canvas.scale(scale,scale);
-        } else canvas.scale(width/w,height/h);
-        Path clipping=new Path();clipping.addRoundRect(new RectF(0,0,w,h),21.8f,21.8f,Path.Direction.CW);
-        canvas.clipPath(clipping);
+        boolean strip=style==DUAL||style==SMALL;
+        float scale=Math.min(width/w,height/h);
+        if(!strip) {
+            // Fill the host with sky, but keep every foreground glyph, icon and
+            // forecast column proportional when rotation changes the cell ratio.
+            Path hostClip=new Path();
+            float radius=21.8f*scale;
+            hostClip.addRoundRect(new RectF(0,0,width,height),radius,radius,Path.Direction.CW);
+            canvas.clipPath(hostClip);
+            sky.drawSky(canvas,data,time,width,height);
+        }
+        // Standard one-row cells are taller than the original MAML strips;
+        // center those templates instead of inflating them to the entire cell.
+        canvas.translate((width-w*scale)/2f,(height-h*scale)/2f);
+        canvas.scale(scale,scale);
+        if(strip) {
+            Path clipping=new Path();clipping.addRoundRect(new RectF(0,0,w,h),21.8f,21.8f,Path.Direction.CW);
+            canvas.clipPath(clipping);
+        }
         foreground=Color.WHITE;
         if(style==DUAL)dual(canvas,data,details,w);
         else {
-            sky.drawSky(canvas,data,time,w,h);
+            if(strip)sky.drawSky(canvas,data,time,w,h);
             sky.drawPrecipitation(canvas,data,style,w,h);
             if(style==SUN)sun(canvas,data);
             else if(style==SMALL)small(canvas,data,details,w);
