@@ -28,7 +28,8 @@ ROOT = Path(__file__).resolve().parent
 WORK = ROOT / ".build"
 SDK_VERSION = "36"
 BUILD_TOOLS = "35.0.0"
-NDK_VERSION = "29.0.14206865"
+# CI pins NDK 29; local builds may reuse an already-installed NDK via WEATHER_NDK_VERSION.
+NDK_VERSION = os.environ.get("WEATHER_NDK_VERSION", "29.0.14206865")
 EDITIONS = {
     "normal": ("dev.weather.oneplus", "weather-oneplus.apk"),
     "test": ("dev.weather.test", "weather-oneplus-experimental.apk"),
@@ -270,19 +271,44 @@ def compile_java(tc: dict[str, Path], inputs: Path) -> tuple[Path, Path, Path]:
     module_sources = sorted((ROOT / "weather-pages-module/src").rglob("*.java"))
     if not splash_sources or not host_sources or not module_sources:
         raise ValueError("Host, splash and module Java source directories must all be present")
-    run(tc["javac"], "--release", "8", "-encoding", "UTF-8", "-classpath",
-        os.pathsep.join(map(str, [tc["android"], splash_jar])), "-d", splash, *splash_sources)
+    javac(tc, splash, [tc["android"], splash_jar], splash_sources)
     # Real original activities remain in the supplied pages DEX; these classes only aid javac.
     if not list(stubs.rglob("*.java")):
         raise ValueError("Missing module compile-only Java stubs")
-    run(tc["javac"], "--release", "8", "-encoding", "UTF-8", "-classpath", tc["android"],
-        "-d", stub_classes, *sorted(stubs.rglob("*.java")))
-    run(tc["javac"], "--release", "8", "-encoding", "UTF-8", "-classpath",
-        os.pathsep.join(map(str, [tc["android"], stub_classes])), "-d", module, *module_sources)
-    run(tc["javac"], "--release", "8", "-encoding", "UTF-8", "-classpath",
-        os.pathsep.join(map(str, [tc["android"], splash, splash_jar, mipush, stub_classes, webkit_jar(), *neural_tts_dependencies()[0]])), "-d", host, *host_sources)
+    javac(tc, stub_classes, [tc["android"]], sorted(stubs.rglob("*.java")))
+    javac(tc, module, [tc["android"], stub_classes], module_sources)
+    javac(tc, host, [tc["android"], splash, splash_jar, mipush, stub_classes,
+                     webkit_jar(), *neural_tts_dependencies()[0]], host_sources)
     return host, splash, module
 
+
+_LEGACY_JAVAC: bool | None = None
+
+def javac(tc: dict[str, Path], destination: Path, classpath: list[Path], sources: list[Path]) -> None:
+    """Compile with --release 8; some local JDKs cannot close --release's ct.sym resources."""
+    global _LEGACY_JAVAC
+    common = ["-encoding", "UTF-8", "-classpath", os.pathsep.join(map(str, classpath)),
+              "-d", destination, *sources]
+    if not _LEGACY_JAVAC:
+        result = subprocess.run([str(tc["javac"]), "-J-Duser.language=en", "-J-Duser.country=US",
+                                 "--release", "8", *common],
+                                capture_output=True, text=True, errors="replace")
+        if result.returncode == 0:
+            _print_javac_output(result)
+            return
+        if "cannot close compiler resources" not in (result.stdout + result.stderr).lower():
+            _print_javac_output(result)
+            raise subprocess.CalledProcessError(result.returncode, result.args)
+        print("javac --release 8 unavailable here; falling back to -source/-target 8", flush=True)
+        _LEGACY_JAVAC = True
+    # android.jar stays on the classpath: it lacks bootclasspath-only Java 8 members such
+    # as LambdaMetafactory, so it must not replace the JDK bootclasspath.
+    run(tc["javac"], "-source", "8", "-target", "8", *common)
+
+def _print_javac_output(result: subprocess.CompletedProcess) -> None:
+    for stream in (result.stdout, result.stderr):
+        if stream:
+            print(stream, end="", flush=True)
 
 def unsigned_payload(apk: Path) -> dict[str, str]:
     with zipfile.ZipFile(apk) as archive:

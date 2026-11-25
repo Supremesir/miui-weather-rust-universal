@@ -15,12 +15,20 @@ def main():
         'android/content/SharedPreferences.java', 'org/json/JSONObject.java')}
     fakes['android/content/Context.java'] = '''package android.content;
 public class Context {public static final int MODE_PRIVATE=0;
+ public android.content.res.Resources getResources(){return new android.content.res.Resources();}
  public SharedPreferences getSharedPreferences(String name,int mode){return new SharedPreferences(){
   public boolean getBoolean(String key,boolean fallback){return fallback;}
   public Editor edit(){throw new UnsupportedOperationException();}};}}'''
+    fakes['android/content/res/Resources.java'] = '''package android.content.res;
+public class Resources {
+ public static int SMALLEST_WIDTH_DP=411;
+ public Configuration getConfiguration(){return new Configuration();}}'''
+    fakes['android/content/res/Configuration.java'] = '''package android.content.res;
+public class Configuration {public int smallestScreenWidthDp=Resources.SMALLEST_WIDTH_DP;}'''
     fakes['android/os/Build.java'] = '''package android.os;public class Build {
  public static String DEVICE="test-device",MODEL="test-model",HARDWARE="test-hardware",
- MANUFACTURER="real-maker",BRAND="real-brand",PRODUCT="real-product",TYPE="user";
+ MANUFACTURER="real-maker",BRAND="real-brand",PRODUCT="real-product",TYPE="user",
+ CHARACTERISTICS="nosdcard";
  public static class VERSION {public static int SDK_INT=37;
  public static String INCREMENTAL="test-incremental",RELEASE="17";}}'''
     fakes['org/json/JSONArray.java'] = '''package org.json;
@@ -35,7 +43,7 @@ public class DeviceCapabilitiesCheck {
   for(int sdk:new int[]{29,31,33,34,36,37}) for(String device:new String[]{"marble","goku","lhasa","sweet","OP5D0DL1"}) {
    Build.VERSION.SDK_INT=sdk;
    Build.DEVICE=device;Build.HARDWARE="mt6789";
-   Map<?,?> profile=wire(AndroidDeviceProfile.systemProperties());
+   Map<?,?> profile=wire(AndroidDeviceProfile.systemProperties(new android.content.Context()));
    check(profile.size()==17,"all original returned keys");
    for(String key:new String[]{"DEVICE","MODEL","VERSION.INCREMENTAL","VERSION.RELEASE",
       "HARDWARE","CHARACTERISTICS","MIUI_VERSION","CUSTOMIZED_REGION","OAID"})
@@ -53,7 +61,12 @@ public class DeviceCapabilitiesCheck {
    check(profile.get("DEVICE").equals("xuanyuan"),"avoid original device downgrades");
    check(profile.get("MODEL").equals("25010PN30C"),"China flagship model");
    check(profile.get("HARDWARE").equals("qcom"),"avoid low hardware override");
-   check(profile.get("CHARACTERISTICS").equals("nosdcard"),"non-tablet profile");
+   android.content.res.Resources.SMALLEST_WIDTH_DP=411;
+   check(profile.get("CHARACTERISTICS").equals("nosdcard"),"phone keeps the ROM characteristics");
+   android.content.res.Resources.SMALLEST_WIDTH_DP=900;
+   check(AndroidDeviceProfile.systemProperties(new android.content.Context()).get("CHARACTERISTICS").equals("nosdcard,tablet"),
+     "large screens expose the tablet layout switch");
+   android.content.res.Resources.SMALLEST_WIDTH_DP=411;
    check(profile.get("MULTI_DISPLAY_TYPE_OLD").equals(0),"non-fold legacy profile");
    check(profile.get("CUSTOMIZED_REGION").equals("CN"),"requested China region");
   }
@@ -86,8 +99,21 @@ public class DeviceCapabilitiesCheck {
             sources.append(path)
         sources.extend(ROOT / 'port' / name for name in (
             'AndroidDeviceProfile.java', 'WeatherAppearancePreferences.java', 'Codec.java'))
-        subprocess.run([str(args.java_home / 'bin/javac.exe'), '--release', '8',
-            '-encoding', 'UTF-8', '-d', str(work / 'classes'), *map(str,sources)], check=True)
+        compile_args = ['-encoding', 'UTF-8', '-d', str(work / 'classes'), *map(str, sources)]
+        attempt = subprocess.run([str(args.java_home / 'bin/javac.exe'),
+            '-J-Duser.language=en', '-J-Duser.country=US', '--release', '8',
+            *compile_args], capture_output=True)
+        output = ((attempt.stdout or b'') + (attempt.stderr or b'')).decode('utf-8', 'replace')
+        if attempt.returncode and 'cannot close compiler resources' in output.lower():
+            # Local JDKs may be unable to close --release's ct.sym resources.
+            legacy = subprocess.run([str(args.java_home / 'bin/javac.exe'), '-source', '8',
+                '-target', '8', *compile_args], capture_output=True)
+            if legacy.returncode:
+                print(((legacy.stdout or b'') + (legacy.stderr or b'')).decode('utf-8', 'replace'))
+                raise SystemExit('legacy javac failed')
+        else:
+            print(output, end='')
+            attempt.check_returncode()
         subprocess.run([str(args.java_home / 'bin/java.exe'), '-cp', str(work / 'classes'),
             'dev.weather.oneplus.DeviceCapabilitiesCheck'], check=True)
 

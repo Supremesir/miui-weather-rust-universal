@@ -24,7 +24,24 @@ public final class AndroidDeviceProfile {
         nativeHomeCardBlur(WeatherAppearancePreferences.homeCardBlurEnabled(context));
     }
 
-    static Map<String, Object> systemProperties() {
+    /**
+     * ro.build.characteristics decides the upstream large-screen layout
+     * (DynamicLayoutMode.padPortraitMode / padLandMode). The profile used to
+     * hard-code "nosdcard", so a real tablet still rendered the phone layout.
+     * Keep the non-tablet token and append "tablet" once the current window is
+     * at least 600dp on its smallest side. That is Android's own tablet
+     * threshold, so pads and unfolded large-screen foldables get the pad
+     * layout while phone-sized windows keep the previous behaviour.
+     */
+    static String characteristics(Context context) {
+        boolean tablet = false;
+        if (context != null) {
+            tablet = context.getResources().getConfiguration().smallestScreenWidthDp >= 600;
+        }
+        return tablet ? "nosdcard,tablet" : "nosdcard";
+    }
+
+    static Map<String, Object> systemProperties(android.content.Context context) {
         Map<String, Object> profile = new LinkedHashMap<>();
         profile.put("DEVICE", PROFILE_DEVICE);
         profile.put("MODEL", PROFILE_MODEL);
@@ -32,7 +49,7 @@ public final class AndroidDeviceProfile {
         profile.put("VERSION.RELEASE", Build.VERSION.RELEASE);
         profile.put("SDK_INT", Build.VERSION.SDK_INT);
         profile.put("HARDWARE", "qcom");
-        profile.put("CHARACTERISTICS", "nosdcard");
+        profile.put("CHARACTERISTICS", characteristics(context));
         profile.put("MULTI_DISPLAY_TYPE", 0);
         profile.put("MULTI_DISPLAY_TYPE_OLD", 0);
         // Our bundled Majestic renderer implements this in the app. It is a
@@ -102,7 +119,7 @@ public final class AndroidDeviceProfile {
             }
         }
         if (PROPERTY_CHANNEL.equals(channel)) {
-            if ("getAll".equals(method)) return systemProperties();
+            if ("getAll".equals(method)) return systemProperties(context);
             Object key = arguments instanceof JSONObject ? ((JSONObject) arguments).opt("key")
                 : arguments instanceof Map ? ((Map<?, ?>) arguments).get("key") : null;
             if ("ro.miui.region".equals(key) || "ro.miui.customized.region".equals(key)) {

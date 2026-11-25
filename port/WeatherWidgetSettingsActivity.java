@@ -54,7 +54,10 @@ public abstract class WeatherWidgetSettingsActivity extends AppCompatActivity {
         scroll.setFillViewport(true);scroll.setClipToPadding(false);
         scroll.setBackgroundColor(dark?0xff101010:0xfff5f5f5);
         LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(20),dp(12),dp(20),dp(24));
+        // Large screens cap the reading column instead of stretching rows edge to edge.
+        int screenDp=getResources().getConfiguration().screenWidthDp;
+        int side=screenDp>720?(screenDp-720)/2+20:20;
+        content.setPadding(dp(side),dp(12),dp(side),dp(24));
         scroll.addView(content,new ScrollView.LayoutParams(-1,-2));
         scroll.setOnApplyWindowInsetsListener((view,insets)->{
             view.setPadding(0,0,0,insets.getSystemWindowInsetBottom());return insets;
