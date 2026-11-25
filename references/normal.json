@@ -2,7 +2,7 @@
   "apk_sha256": "de73834fb2384f36f088b439a1b0b9e5c01c8b84baf8ee9994f6e678d5a13d1b",
   "bytes": 122058836,
   "payload_sha256": {
-    "AndroidManifest.xml": "cb753e163ae2da97df94d56ad813cfaf2b0b35a4fd51bee4f5ab06518dd7e89c",
+    "AndroidManifest.xml": "3ea79e0e3bb54015e99ff9072985479502143d874f729ecc8bcd480bc460493d",
     "assets/app_functions_v2.xml": "666904786532162e07414ad368b40a0870573a45755cfaba4d254ccf18a6855f",
     "assets/app_tools.json": "dc7586e87b4e3a634beeed7ea231c37b6e7fce72d49d82af9d30e83ae31a0afa",
     "assets/appfunctions.xml": "7f26ff0050a25aa6a5aef08e3f863056bc24765c94b6e213f96b8967cfbfc433",
