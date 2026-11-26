@@ -276,7 +276,7 @@ static String characteristics(Context context) {
 
 - `manifests/{normal,test}.xml`：`<application android:resizeableActivity="true">`；主 Activity 解除方向锁。
 - 5 个原生设置页解除方向锁：背景、组件管理、外观、语音、WebView。
-- 仍锁竖屏的 7 处：小组件配置弹窗 + 6 个原版降水/空气/台风页（其布局在 `pages.dex` 里，未验证横屏安全性）。
+- 仍锁竖屏的地方：小组件配置弹窗 + 台风页。降水/空气质量两页已解除方向锁并改成平板卡片，见 7.1.1。
 - `weather-pages-module/src/miui/os/Build.java`：`IS_TABLET` / `IS_MIPAD` 按 `smallestScreenWidthDp >= 600` 求值。
 - `port/WeatherWidgetSettingsActivity.java`：大屏下内容限宽约 720dp 并居中。
 
@@ -284,6 +284,23 @@ static String characteristics(Context context) {
 
 - `isPadLayoutMode` 只是温度 OpenGL 组件自己的宽度判断，**不是**整页布局档位。
 - 真正的布局档位看 `DynamicLayoutMode` 日志（`padPortraitMode` / `padLandMode` / `phoneMode`）。
+
+#### 7.1.1 降水 / 空气质量的原版页改成平板卡片
+
+原版 `ActivityMinuteRain` / `ActivityAqiDetail` 在平板上是整屏不透明页面。现在改成和 Dart 15 天弹窗同款的居中卡片：546×636dp、36dp 圆角、`#F2F2F2` 底面、20% 黑色遮罩。
+
+**关键：主题必须写在 manifest 里，不能靠运行时 `setTheme()`。**
+`ActivityManager` 在 activity 启动前就用该 theme 求出 `ActivityInfo.isTranslucentOrFloating()`，据此决定下层的 `WeatherActivity` 是否要被 stop。读成不透明时下层被 stop、SurfaceView 被销毁，卡片后面就是纯黑。`port/res/values-sw600dp/weather_original_page_dialog.xml` 用 `windowIsTranslucent` + `windowIsFloating` 解决，同时让下层保持 paused-but-alive。
+
+**卡片几何**（`weather-pages-module/src/dev/weather/oneplus/PadPageCard.java`）全部对着 15 天弹窗实测标定，真机像素验证：三者的窗口框都是 1365×1440px（2880×1800 @ 2.5x），完全一致。
+
+**关闭控件按原版各自保留**，不注入统一按钮：
+
+- 降水页自带右侧 X，保留。
+- 空气质量页自带左上角返回箭头，保留。
+- 试过统一注入右侧 X：给降水叠加成两个图标，且我早期用 decor 全树扫描去找返回箭头时误伤降雨页的地图（未布局时在 (0,0)），导致地图空白。现已全部移除。
+
+**已知未解**：偶现「关闭卡片后主界面瞬间上移一下再恢复」。已排除的假设：MIUI 的 `periodicallyMoveUpFirst` / `Resume onConfigurationChanged` 日志在普通全屏设置页上同样出现，与该位移没有因果关系。把窗口改成非 floating 也没能消除它，反而让 AQI 的 MIUIX 标题栏跑到卡片外（标题栏挂在 decor 上，不在 `android.R.id.content` 里），该实验已回退。
 
 ### 7.2 小组件响应式（v1.5.0 核心）
 
