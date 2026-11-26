@@ -2,7 +2,7 @@
 
 > **这份文档的用途**：让下一个 Agent 在不通读仓库、不重复踩坑的前提下，准确理解这个项目的本质、当前状态、构建方式和工作约定。
 >
-> **快照信息**：2026-11-26 ｜ 版本 `v1.5.0` ｜ 分支 `main` ｜ 提交 `6030573` ｜ 发布人 fork：`Supremesir/miui-weather-rust-universal`
+> **快照信息**：2026-11-26 ｜ 版本 `v1.5.1` ｜ 分支 `main` ｜ 提交 `5f13d6e` ｜ 发布人 fork：`Supremesir/miui-weather-rust-universal`
 >
 > **阅读顺序**：第 0、1、2 节必读；要改代码先读第 5、12 节；要发版读第 9 节。旧文档 `HANDOFF-PAD-LANDSCAPE.md` 只作为平板适配的历史调研记录，本文档是当前唯一权威交接。
 
@@ -30,19 +30,19 @@
 
 ---
 
-## 2. 当前发布状态快照（v1.5.0）
+## 2. 当前发布状态快照（v1.5.1）
 
 | 项 | 值 |
 |---|---|
-| 版本号 | `versionCode 10500`，`versionName 18.0.0.27-normal-v1.5.0` / `18.0.0.27-test-v1.5.0` |
+| 版本号 | `versionCode 10501`，`versionName 18.0.0.27-normal-v1.5.1` / `18.0.0.27-test-v1.5.1` |
 | 包名 | 普通版 `dev.weather.oneplus`；试验版 `dev.weather.test` |
-| 分支 / HEAD | `main` / `6030573`（Align CI DEX payload references） |
+| 分支 / HEAD | `main` / `5f13d6e`（Align 1.5.1 payload references with the CI build） |
 | 远端 | `origin` = 用户 fork；`upstream` = `Maga-King/miui-weather-rust-universal` |
-| Release | `v1.5.0 · 平板布局与小组件适配`，Latest、非草稿、非预发布 |
-| Release URL | `https://github.com/Supremesir/miui-weather-rust-universal/releases/tag/v1.5.0` |
-| 发布构建 | `https://github.com/Supremesir/miui-weather-rust-universal/actions/runs/45616586094` |
-| 普通版 APK | `weather-oneplus.apk`，云端 SHA-256 `30fad6fa9dcb75dffa3f4c27671de7e4ac466d4b77bb032c5f9764e062b99f15` |
-| 试验版 APK | `weather-oneplus-experimental.apk`，云端 SHA-256 `70c69030d8c9a8e1e61072eeb231c8e8dc4ab01cbeaa0891764010efc5872b72` |
+| Release | `v1.5.1 · 平板降水与空气质量弹窗化`，Latest、非草稿、非预发布 |
+| Release URL | `https://github.com/Supremesir/miui-weather-rust-universal/releases/tag/v1.5.1` |
+| 发布构建 | `https://github.com/Supremesir/miui-weather-rust-universal/actions/runs/45799232212` |
+| 普通版 APK | `weather-oneplus.apk`，云端 SHA-256 `6ce783d8…`（完整值见 `references/normal.json`） |
+| 试验版 APK | `weather-oneplus-experimental.apk`，云端 SHA-256 `92194f45…`（完整值见 `references/test.json`） |
 | 其他附件 | 两份 `dist/*.json` 构建报告 + `SHA256SUMS.txt` |
 | 签名 | 本地 PKCS#12：`.build/signing/pad.p12`，别名 `weather`，RSA 2048，10000 天；私钥只存在于本机与 Actions Secrets |
 | 严格比对结果 | normal 1029 条全等、test 1030 条全等，0 changed/missing/extra |
@@ -238,6 +238,7 @@ port/*.java + weather-pages-module/src/*.java
   - normal：`8cdaed01dc819cdc1a68e10a1c468f942d24f7dc435716c618ea9cf6139a621d`
   - test：`e811d511e55b02fc535d37270cea195e960364933153957ab62436ec52676c40`
 - 第一次 1.5.0 Actions 失败就是「normal/test 各只有 `classes.dex` 一项差异」，提交 `6030573` 采用云端产物后通过。
+- 1.5.1 又走了一遍同样的流程：`0f52647` 那次构建只有门禁失败（两个 APK 都已编译并签名成功），下载 Artifact 后按 CI 报告重写 `references`（`5f13d6e`），再跑即 `1031/1032 equal, 0 changed`。差异固定在这三项：`classes.dex`、`libweatherhost.so`、`libweathercompat.so`；若新增了资源条目（如 `res/anim/*`），条目总数也会变，必须整体以 CI 报告为准。
 
 ### 6.4 实践含义
 
