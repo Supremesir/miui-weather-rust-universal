@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Window animation for WeatherOriginalPageDialog. Declared as a style so the window
+      manager can drive it, which is what avoids the flash of an already-drawn card before
+      the view-level animation gets a chance to start.
+    -->
+    <style name="WeatherPadCardAnimation" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/weather_pad_card_in</item>
+        <item name="android:windowExitAnimation">@anim/weather_pad_card_out</item>
+    </style>
+</resources>

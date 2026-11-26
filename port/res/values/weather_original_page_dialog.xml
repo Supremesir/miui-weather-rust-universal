@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Manifest theme for the original minute-rain / AQI screens.
+
+      On a phone those pages are ordinary full-screen pages, so the window stays opaque and
+      behaves as upstream ships it.
+
+      A pad picks up the floating variant from values-sw600dp. The declaration has to live
+      here rather than being applied with setTheme() at runtime: ActivityManager decides
+      whether the activity underneath may stay alive from ActivityInfo.isTranslucentOrFloating(),
+      which is resolved from the manifest theme before the activity starts. A runtime
+      setTheme() only changes window attributes, never that decision, so the weather screen
+      below would still be stopped and its SurfaceView destroyed - the black background
+      behind the card.
+    -->
+    <style name="WeatherOriginalPageDialog" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+</resources>

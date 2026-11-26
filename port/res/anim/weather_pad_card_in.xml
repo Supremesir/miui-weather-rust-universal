@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Window enter animation for the pad card, applied by the window manager to the whole layer
+  rather than to a view inside it.
+
+  Animating here instead of in Java matters: a view-level alpha/translate starts one frame
+  after the window is already on screen, which shows as a flash of the finished card before
+  it jumps down and slides in. A window animation is applied to the first frame, so nothing
+  is ever drawn at the final position ahead of time.
+
+  The travel and easing mirror the Dart 15-day sheet: it starts just below its resting place
+  and settles with a decelerate curve.
+-->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+     android:shareInterpolator="false">
+    <translate
+        android:fromYDelta="18%"
+        android:toYDelta="0"
+        android:duration="260"
+        android:interpolator="@android:interpolator/decelerate_cubic" />
+    <alpha
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0"
+        android:duration="180"
+        android:interpolator="@android:interpolator/decelerate_quad" />
+</set>

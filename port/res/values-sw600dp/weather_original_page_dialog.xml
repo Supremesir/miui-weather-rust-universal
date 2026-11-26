@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Pad variant of WeatherOriginalPageDialog: a floating, translucent card window.
+
+      windowIsFloating is what lets the window be sized to the card instead of the task
+      bounds, and it is also one of the two attributes ActivityInfo.isTranslucentOrFloating()
+      accepts - so the weather activity below stays paused-and-visible instead of being
+      stopped with its SurfaceView torn down.
+
+      windowIsTranslucent keeps the window surface transparent, so the 20% system scrim shows
+      the weather screen through the area around the card. PadPageCard supplies the exact
+      size, the #F2F2F2 sheet and the rounded corners.
+
+      windowAnimationStyle runs the slide-up on the window layer, so the card's very first
+      frame is already offset and transparent instead of appearing at its final position for
+      one frame and then jumping. windowDisablePreview keeps the system from drawing an empty
+      window ahead of that first frame.
+    -->
+    <style name="WeatherOriginalPageDialog" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.2</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:windowAnimationStyle">@style/WeatherPadCardAnimation</item>
+    </style>
+</resources>

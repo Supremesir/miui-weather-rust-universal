@@ -42,12 +42,12 @@
     </service>
     <activity android:name="dev.weather.oneplus.WeatherFontRestartActivity" android:exported="false" android:process=":font_restart" android:taskAffinity="dev.weather.oneplus.font_restart" android:excludeFromRecents="true" android:theme="@style/WeatherStartingTheme" />
     <activity android:name="dev.weather.oneplus.WeatherWebActivity" android:exported="false" android:theme="@android:style/Theme.Material.Light.NoActionBar" />
-    <activity android:name="dev.weather.oneplus.OriginalRainActivity" android:exported="false" android:screenOrientation="portrait" />
-    <activity android:name="dev.weather.oneplus.OriginalAqiActivity" android:exported="false" android:screenOrientation="portrait" />
+    <activity android:name="dev.weather.oneplus.OriginalRainActivity" android:exported="false" android:theme="@style/WeatherOriginalPageDialog" />
+    <activity android:name="dev.weather.oneplus.OriginalAqiActivity" android:exported="false" android:theme="@style/WeatherOriginalPageDialog" />
     <activity android:name="dev.weather.oneplus.OriginalTyphoonActivity" android:exported="false" android:screenOrientation="portrait" />
     <activity android:name="dev.weather.oneplus.OriginalTyphoonOS4Activity" android:exported="false" android:screenOrientation="portrait" />
-    <activity android:name="dev.weather.oneplus.OriginalRainOS4Activity" android:exported="false" android:screenOrientation="portrait" />
-    <activity android:name="dev.weather.oneplus.OriginalAqiOS4Activity" android:exported="false" android:screenOrientation="portrait" />
+    <activity android:name="dev.weather.oneplus.OriginalRainOS4Activity" android:exported="false" android:theme="@style/WeatherOriginalPageDialog" />
+    <activity android:name="dev.weather.oneplus.OriginalAqiOS4Activity" android:exported="false" android:theme="@style/WeatherOriginalPageDialog" />
     <activity android:name="dev.weather.oneplus.WeatherActivity" android:exported="true" android:resizeableActivity="true" android:launchMode="singleTask" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode|density" android:windowSoftInputMode="adjustResize" android:theme="@style/WeatherStartingTheme">
       <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
     </activity>

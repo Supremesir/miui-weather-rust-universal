@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Window exit animation for the pad card: the reverse of weather_pad_card_in. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+     android:shareInterpolator="false">
+    <translate
+        android:fromYDelta="0"
+        android:toYDelta="18%"
+        android:duration="200"
+        android:interpolator="@android:interpolator/accelerate_cubic" />
+    <alpha
+        android:fromAlpha="1.0"
+        android:toAlpha="0.0"
+        android:duration="160"
+        android:interpolator="@android:interpolator/accelerate_quad" />
+</set>
